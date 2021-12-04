@@ -141,13 +141,11 @@ func buildGameData(game []string) ([]int, []Board) {
 
 func convertBoardLineToCells(line string) []Cell {
 	numbers := []Cell{}
-	for _, numberStr := range strings.Split(line, " ") {
-		if numberStr != "" {
-			number, _ := strconv.Atoi(numberStr)
-			numbers = append(numbers, Cell{
-				Number: number,
-			})
-		}
+	for _, numberStr := range strings.Fields(line) {
+		number, _ := strconv.Atoi(numberStr)
+		numbers = append(numbers, Cell{
+			Number: number,
+		})
 	}
 	return numbers
 }
