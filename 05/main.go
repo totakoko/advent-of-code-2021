@@ -31,18 +31,17 @@ func countPart1Overlaps(segments []string, gridSize int) int {
 		x2, _ := strconv.Atoi(endCoordinatesStr[0])
 		y2, _ := strconv.Atoi(endCoordinatesStr[1])
 
-		// swap values to ensure an ascending order
-
 		// only draw horizontal or vertical lines
 		if x1 == x2 {
+			// swap values to ensure an ascending order
 			if y1 > y2 {
 				y1, y2 = y2, y1
 			}
 			for y := y1; y <= y2; y++ {
 				grid[y*gridSize+x1]++
 			}
-		}
-		if y1 == y2 {
+		} else if y1 == y2 {
+			// swap values to ensure an ascending order
 			if x1 > x2 {
 				x1, x2 = x2, x1
 			}
@@ -77,9 +76,9 @@ func countPart2Overlaps(segments []string, gridSize int) int {
 		x2, _ := strconv.Atoi(endCoordinatesStr[0])
 		y2, _ := strconv.Atoi(endCoordinatesStr[1])
 
-		// only draw horizontal or vertical lines
 		switch true {
 		case x1 == x2:
+			// swap values to ensure an ascending order
 			if y1 > y2 {
 				y1, y2 = y2, y1
 			}
@@ -87,6 +86,7 @@ func countPart2Overlaps(segments []string, gridSize int) int {
 				grid[y*gridSize+x1]++
 			}
 		case y1 == y2:
+			// swap values to ensure an ascending order
 			if x1 > x2 {
 				x1, x2 = x2, x1
 			}
