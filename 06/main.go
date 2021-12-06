@@ -16,6 +16,7 @@ func main() {
 	fmt.Println("# Population after 256 days", evolvePopulationWithModel(parseInput(input[0]), 256))
 
 	fmt.Println("Bonus:")
+	fmt.Println("# Population after 256 days", evolveBigPopulationWithModel(parseInput(input[0]), 256))
 	fmt.Println("# Population after 1000 days", evolveBigPopulationWithModel(parseInput(input[0]), 1000))
 	fmt.Println("# Population after 10000 days", evolveBigPopulationWithModel(parseInput(input[0]), 10000))
 }
@@ -65,9 +66,10 @@ func evolvePopulationWithModel(population []int, days int) int {
 
 // big.Int implementation, if we want lots of days
 func evolveBigPopulationWithModel(population []int, days int) *big.Int {
+	one := big.NewInt(1)
 	populationByState := make([]big.Int, 9)
 	for _, fishState := range population {
-		populationByState[fishState] = *big.NewInt(int64(fishState))
+		populationByState[fishState].Add(&populationByState[fishState], one)
 	}
 
 	for day := 0; day < days; day++ {
