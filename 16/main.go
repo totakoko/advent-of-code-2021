@@ -94,6 +94,7 @@ func (decoder *PacketDecoder) decodeNextPacket() (Packet, int) {
 		}
 		bits += decoder.readNextBits(4)
 		packet.Value = convertBinaryToNumber(bits)
+
 	default: // operator
 		lengthTypeID := decoder.readNextNumber(1)
 		if lengthTypeID == 0 {
@@ -102,6 +103,60 @@ func (decoder *PacketDecoder) decodeNextPacket() (Packet, int) {
 		} else {
 			subPacketsCount := decoder.readNextNumber(11)
 			packet.SubPackets = decoder.decodePacketsN(subPacketsCount)
+		}
+		switch typeID {
+		case 0: // sum
+			sum := 0
+			for _, subPacket := range packet.SubPackets {
+				sum += subPacket.Value
+			}
+			packet.Value = sum
+
+		case 1: // product
+			product := 1
+			for _, subPacket := range packet.SubPackets {
+				product *= subPacket.Value
+			}
+			packet.Value = product
+
+		case 2: // minimum
+			minimum := math.MaxInt64
+			for _, subPacket := range packet.SubPackets {
+				if subPacket.Value < minimum {
+					minimum = subPacket.Value
+				}
+			}
+			packet.Value = minimum
+
+		case 3: // maximum
+			maximum := 0
+			for _, subPacket := range packet.SubPackets {
+				if subPacket.Value > maximum {
+					maximum = subPacket.Value
+				}
+			}
+			packet.Value = maximum
+
+		case 5: // greater than
+			if packet.SubPackets[0].Value > packet.SubPackets[1].Value {
+				packet.Value = 1
+			} else {
+				packet.Value = 0
+			}
+
+		case 6: // less then
+			if packet.SubPackets[0].Value < packet.SubPackets[1].Value {
+				packet.Value = 1
+			} else {
+				packet.Value = 0
+			}
+
+		case 7: // equal to
+			if packet.SubPackets[0].Value == packet.SubPackets[1].Value {
+				packet.Value = 1
+			} else {
+				packet.Value = 0
+			}
 		}
 	}
 	return packet, decoder.getBytesRead() - initialReadIndex
@@ -122,7 +177,7 @@ func convertToBinaryString(hexString string) string {
 func part2(input string) int {
 	binaryString := convertToBinaryString(input)
 	packet, _ := NewPacketDecoder(binaryString).decodeNextPacket()
-	return computePacketValue(packet)
+	return packet.Value
 }
 
 func convertBinaryToNumber(binary string) int {
@@ -139,67 +194,4 @@ func sumPacketsVersion(packet Packet) int {
 		sum += sumPacketsVersion(subPacket)
 	}
 	return sum
-}
-
-func computePacketValue(packet Packet) int {
-	switch packet.TypeID {
-	case 0: // sum
-		sum := 0
-		for _, subPacket := range packet.SubPackets {
-			sum += computePacketValue(subPacket)
-		}
-		return sum
-
-	case 1: // product
-		product := 1
-		for _, subPacket := range packet.SubPackets {
-			product *= computePacketValue(subPacket)
-		}
-		return product
-
-	case 2: // minimum
-		minimum := math.MaxInt64
-		for _, subPacket := range packet.SubPackets {
-			value := computePacketValue(subPacket)
-			if value < minimum {
-				minimum = value
-			}
-		}
-		return minimum
-
-	case 3: // maximum
-		maximum := 0
-		for _, subPacket := range packet.SubPackets {
-			value := computePacketValue(subPacket)
-			if value > maximum {
-				maximum = value
-			}
-		}
-		return maximum
-
-	case 4: // literal value
-		return packet.Value
-
-	case 5: // greater than
-		if computePacketValue(packet.SubPackets[0]) > computePacketValue(packet.SubPackets[1]) {
-			return 1
-		}
-		return 0
-
-	case 6: // less then
-		if computePacketValue(packet.SubPackets[0]) < computePacketValue(packet.SubPackets[1]) {
-			return 1
-		}
-		return 0
-
-	case 7: // equal to
-		if computePacketValue(packet.SubPackets[0]) == computePacketValue(packet.SubPackets[1]) {
-			return 1
-		}
-		return 0
-
-	default: // operator
-		fmt.Println("unknown operator")
-		return -1
-	}
 }
