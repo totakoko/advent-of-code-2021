@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"math"
 	"strconv"
 	"strings"
 )
@@ -19,29 +18,12 @@ func main() {
 
 func part1(input []string) int {
 	targetArea := parseInput(input)
-
-	// find velocityX so that we can reach targetArea.MinX
-	velocityX := 0
-	probeX := 0
-	for probeX < targetArea.MinX {
-		velocityX++ // TODO handle negative
-		probeX = intSumToN(velocityX)
-	}
-
-	maxVelocityY := 0
-	for velocityY := 0; velocityY < 300; velocityY++ { // bruteforce !
-		for sleepSteps := 0; sleepSteps < 300; sleepSteps++ {
-			nbSteps := int(math.Abs(float64(velocityX))) + sleepSteps
-			negativeY := intSumToN(nbSteps - 1)
-			if targetArea.Contains(probeX, nbSteps*velocityY-negativeY) {
-				if velocityY > maxVelocityY {
-					maxVelocityY = velocityY
-				}
-			}
-		}
-	}
-
-	return intSumToN(maxVelocityY)
+	// the trajectory always comes back at 0
+	// in that case, the maximum possible velocityY is the distance from 0 to the bottom of the area (negative)
+	// thus, the initial velocityY is -minY - 1 (-1 to get the previous velocity = the initial velocity)
+	velocityY := -targetArea.MinY - 1
+	maxY := intSumToN(velocityY)
+	return maxY
 }
 
 func part2(input []string) int {
