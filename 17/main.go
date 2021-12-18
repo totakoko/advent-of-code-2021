@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -27,7 +28,29 @@ func part1(input []string) int {
 }
 
 func part2(input []string) int {
-	return 0
+	targetArea := parseInput(input)
+	velocities := map[string]bool{}
+	minVelocityX, _ := reverseSumToN(targetArea.MinX)
+	for vX := minVelocityX; vX <= targetArea.MaxX; vX++ {
+		for vY := targetArea.MinY; vY <= -targetArea.MinY-1; vY++ {
+			maxProbeX := intSumToN(vX)
+			for nbSteps := 1; nbSteps <= 500; nbSteps++ {
+				probeX := nbSteps*vX - intSumToN(nbSteps-1)
+				if nbSteps > vX {
+					probeX = maxProbeX
+				}
+				probeY := nbSteps*vY - intSumToN(nbSteps-1)
+				if probeY < targetArea.MinY {
+					break
+				}
+				if targetArea.Contains(probeX, probeY) {
+					velocities[strconv.Itoa(vX)+":"+strconv.Itoa(vY)] = true
+				}
+			}
+		}
+	}
+
+	return len(velocities)
 }
 
 type Area struct {
@@ -59,4 +82,28 @@ func parseInput(input []string) Area {
 
 func intSumToN(n int) int {
 	return n * (n + 1) / 2
+}
+
+func reverseSumToN(sum int) (int, bool) {
+	delta := 1 - 4*(-2*sum) // b² - 4(a=1)(c=-2sum)
+	sqrt := math.Sqrt(float64(delta))
+	if sqrt > 0 {
+		x1 := (-1 - sqrt) / 2
+		x2 := (-1 + sqrt) / 2
+		intResult := true
+		if x1 != math.Trunc(x1) || x2 != math.Trunc(x2) {
+			intResult = false
+		}
+		if x2 > x1 {
+			return int(x2), intResult
+		}
+		return int(x1), intResult
+	}
+	if sqrt == 0 {
+		// not good! float
+		return -1 / 2, false
+	}
+	// sqrt < 0
+	// not good!
+	return 0, false
 }
